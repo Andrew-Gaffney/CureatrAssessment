@@ -46,7 +46,7 @@ class Grid extends Component {
         if(neighbors < 2 && grid[i][j]) {
           nextState[i][j] = false;
         }
-        else if(grid[i][j] && neighbors > 2 && neighbors < 4) {
+        else if(grid[i][j] && neighbors >= 2 && neighbors < 4) {
           nextState[i][j] = true;
         }
         else if(grid[i][j] && neighbors > 3) {
