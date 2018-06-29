@@ -12,7 +12,6 @@ class Grid extends Component {
     }
     this.onPlayButtonClick = this.onPlayButtonClick.bind(this);
     this.createGrid = this.createGrid.bind(this);
-    this.countNeighbors = this.countNeighbors.bind(this);
     this.evalGrid = this.evalGrid.bind(this);
     this.handleResetClick = this.handleResetClick.bind(this);
   }
@@ -21,159 +20,49 @@ class Grid extends Component {
     this.createGrid();
   }
 
-
-  //By far the largest function, contains the many different cases that need to be evaluated based on the cell's position in the grid in order to
-  //determine the number of neighbors of each cell during each game step.
-  countNeighbors(i, j) {
-    const grid = this.state.gridArray;
-    let neighbors = 0;
-
-    if(i > 0 && j > 0 && i <= 48 && j <= 48) {
-      if(grid[i][j - 1]) {
-        neighbors += 1;
-      }
-      if(grid[i][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j - 1]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j - 1]) {
-        neighbors += 1;
-      }
-
-    }
-    else if(i === 0 && j === 0) {
-      if(grid[i][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j + 1]) {
-        neighbors += 1;
-      }
-    }
-    if(i === 0 && j > 0 && j <= 48) {
-      if(grid[i][j - 1]) {
-        neighbors += 1;
-      }
-      if(grid[i][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j -1]) {
-        neighbors += 1;
-      }
-    }
-    else if(i === 49 && j > 0 && j <= 48) {
-      if(grid[i][j - 1]) {
-        neighbors += 1;
-      }
-      if(grid[i][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j -1]) {
-        neighbors += 1;
-      }
-    }
-    if(i > 0 && i <= 48 && j === 0) {
-      if(grid[i + 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j + 1]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j + 1]) {
-        neighbors += 1;
-      }
-    }
-    else if(i > 0 && i <= 48 && j === 49) {
-      if(grid[i + 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i][j - 1]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j - 1]) {
-        neighbors += 1;
-      }
-      if(grid[i + 1][j - 1]) {
-        neighbors += 1;
-      }
-    }
-    else if(i === 49 && j === 49) {
-      if(grid[i][j - 1]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j]) {
-        neighbors += 1;
-      }
-      if(grid[i - 1][j - 1]) {
-        neighbors += 1;
-      }
-    }
-    return neighbors;
-  }
-
-  //Function that loops through the grid and calls countNeighbors on each cell. It also creates the next state of the board.
+  //Function that loops through the grid and counts neighbors on each cell. It also creates the next state of the board.
   evalGrid() {
-    const nextStep = [];
+    const grid = this.state.gridArray;
+    const nextState = [];
+
     for(let i = 0; i < 50; i++) {
-      nextStep.push([])
+      nextState.push([])
       for(let j = 0; j < 50; j++) {
-        if(this.countNeighbors(i, j) < 2 && this.state.gridArray[i][j]) {
-          nextStep[i].push(false);
+        nextState[i].push('');
+        let neighbors = grid[i][j] ? -1 : 0;
+        for(let p = -1; p <= 1; p++) {                 // row neighbor offsets
+          for(let q = -1; q <= 1; q++) {              // column neighbor offsets
+            if(i + p < 0 ||
+               i + p > 49 ||
+               j + q < 0 ||
+               j + q > 49)
+               continue;
+            if(grid[i + p][j +  q]) {
+              neighbors += 1;
+            }
+          }
         }
-        else if(this.state.gridArray[i][j] && this.countNeighbors(i,j) > 2 && this.countNeighbors() < 4) {
-          nextStep[i].push(true);
+
+        if(neighbors < 2 && grid[i][j]) {
+          nextState[i][j] = false;
         }
-        else if(this.state.gridArray[i][j] && this.countNeighbors() > 3) {
-          nextStep[i].push(false);
+        else if(grid[i][j] && neighbors > 2 && neighbors < 4) {
+          nextState[i][j] = true;
         }
-        else if(this.state.gridArray[i][j] === false && this.countNeighbors() === 3 || this.countNeighbors() === 6) {
-          nexStep[i].push(true);
+        else if(grid[i][j] && neighbors > 3) {
+          nextState[i][j] = false;
+        }
+        else if(grid[i][j] === false && neighbors === 3 || neighbors === 6) {
+          nextState[i][j] = true;
         }
         else {
-          nextStep[i].push(false);
+          nextState[i][j] = false;
         }
       }
     }
     this.setState(function() {
       return {
-        gridArray: nextStep,
+        gridArray: nextState,
       }
     })
   }
@@ -249,7 +138,7 @@ class Grid extends Component {
         {
           !this.state.hasStartedOnce ? <button onClick={this.onPlayButtonClick}>Start</button>
           : this.state.isPlaying && this.state.hasStartedOnce ? <button onClick={this.onPlayButtonClick}>Pause</button>
-          : <button onClick={this.onPayButtonClick}>Resume</button>
+          : <button onClick={this.onPlayButtonClick}>Resume</button>
         }
         <button onClick={this.handleResetClick}>Reset</button>
         </div>
